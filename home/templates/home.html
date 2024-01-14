@@ -18,12 +18,13 @@
         crossorigin="anonymous">
 
 </script>
+
 {% load static %}
 {% load humanize %}
 <div class="container">
 
     <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-      <a class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none" href="{% url 'home-page' %}">
+      <a class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">
         <img src="{% static 'ico.png' %}" alt="logo">
           <span class="fs-4"><b>TazaKhabre</b></span>
       </a>
@@ -31,7 +32,7 @@
         {% block header %}
 
             <div class="dropdown">
-                <a class="btn rounded-pill btn-outline-info" role="button" style="margin-right: 10px;">Trending</a>
+                <a class="btn rounded-pill btn-outline-info" role="button" style="margin-right: 10px;" href="{% url 'home-page' %}">Trending</a>
                 <button class="btn rounded-pill btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Categories
                 </button>
@@ -47,9 +48,8 @@
 
 
           <div class="col-md-3 text-end">
-            <form method="POST" class="d-flex" role="search" action="{% url 'search-news' %}">
-                {% csrf_token %}
-                <input class="input is-success" type="search" placeholder="Search the News" aria-label="Search" style="margin-right: 10px" name="search" maxlength="500">
+            <form method="GET" class="d-flex" role="search" action="{% url 'search-news' %}">
+                <input class="input is-success" type="search" placeholder="Search the News" aria-label="Search" style="margin-right: 10px" name="search" maxlength="500" required>
                 <button class="btn rounded-pill btn-outline-success" type="submit">Search</button>
             </form>
           </div>
@@ -62,10 +62,10 @@
 
 {% block data %}
     <div class="container-sm">
-        <div class="row" style="display:flex; justify-content: space-evenly">
+        <div class="row" style="display:flex; justify-content: space-evenly; min-height: 75vh">
             <div class="col-sm-6">
                 {% for article in articles %}
-                    {% if article.urlToImage != None %}
+                    {% if article.urlToImage != None and article.description != None %}
                     <div class="shadow" style="margin-bottom: 30px">
                         <div class="card mb-3">
                           <img src="{{ article.urlToImage }}" class="card-img-top" alt="Image didn't load Properly..">
@@ -80,6 +80,13 @@
                         </div>
                     </div>
                     {% endif %}
+                {% empty %}
+                    <div class="container">
+                        <div class="row" style="display: flex; justify-content: center; align-content: center; height: 60vh">
+                            <img src="{% static 'oops.png' %}" style="width: 128px; height: 120px" alt="oops image">
+                            <p class="text-center">You have reached your daily limit, Try again tomorrow.</p>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
             <div class="col-sm-4">
@@ -122,13 +129,15 @@
     <div class="container" style="display: flex; justify-content: center; margin-bottom: 25px">
      <nav aria-label="Page navigation example">
       <ul class="pagination">
-          {% if previous != 0 %}
-              <li class="page-item"><a class="page-link" href="{% url 'home-page' %}?previous={{ previous }}">Previous</a></li>
+
+          {% if previous > 0 %}
+              <li class="page-item"><a class="page-link" href="{{ url }}page={{ previous }}">Back</a></li>
           {% else %}
-              <li class="page-item"><a class="page-link">Previous</a></li>
+              <li class="page-item"><a class="page-link">Back</a></li>
           {% endif %}
                 <li class="page-item"><a class="page-link">{{ current }}</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'home-page' %}?next={{ next }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="{{ url }}page={{ next }}">Next</a></li>
+
       </ul>
      </nav>
     </div>

@@ -6,20 +6,14 @@ from home.models import Subscriber
 from django.contrib import messages
 
 
-Previous = 0
-Next = 2
-
-def newsapi(params, q=None):
+def trending_api(params):
     apikey = settings.API_KEY
-    if q is None:
-        url = f'https://newsapi.org/v2/top-headlines?apiKey={apikey}'
-    else:
-        url = f'https://newsapi.org/v2/top-headlines?q={q}&apiKey={apikey}'
+    url = f'https://newsapi.org/v2/top-headlines?apiKey={apikey}'
     response = request_module.get(url=url, params=params)
     return response.json()
 
 
-def everything(params, keyword):
+def everything_api(params, keyword):
     apikey = settings.API_KEY
     url = f'https://newsapi.org/v2/everything?q={keyword}&apiKey={apikey}'
     response = request_module.get(url, params=params)
@@ -27,24 +21,20 @@ def everything(params, keyword):
 
 
 def home(request):
-    global Next, Previous
-    if 'next' in request.GET:
-        Next += 1
-        Previous += 1
-        current = int(request.GET.get('next')) - 1
-    elif 'previous' in request.GET:
-        Next -= 1
-        Previous -= 1
-        current = int(request.GET.get('previous')) + 1
-    else:
-        current = 1
+    page = request.GET.get('page', default=1)
+    category=request.GET.get('category', default='general')
+    params_dict = {'country': 'in',
+                   'category': category,
+                   'page': page}
 
-    category = request.GET.get('category', default='general')
+    news_response = trending_api(params_dict)
 
-    params_dict = {'country': 'in', 'pageSize': 10, 'page': current, 'category': category}
-    news_response = newsapi(params_dict)
+    context = {'articles': news_response['articles'],
+               'previous': int(page)-1,
+               'current': page,
+               'next': int(page)+1,
+               'url': f'{request.path}?category={category}&'}
 
-    context = {'articles': news_response['articles'], 'previous': Previous, 'next': Next, 'current': current}
     return render(request, 'home.html', context=context)
 
 
@@ -57,7 +47,7 @@ def subscribe(request):
         email = request.POST.get('email')
         Subscriber.objects.create(email=email)
     except Exception as e:
-        messages.error(request, 'Error occurred!')
+        messages.error(request, 'Error occurred! Try again with a different email.')
     else:
         messages.success(request, 'Congrats, You successfully became a subscriber.')
     finally:
@@ -65,9 +55,13 @@ def subscribe(request):
 
 
 def search(request):
-    keyword_ = request.POST.get('search')
-    params_dict = {'pageSize': 20, 'page': 1}
-    news_response = everything(params_dict, keyword=keyword_)
-    # print(news_response)
-    context = {'articles': news_response['articles']}
+    page = request.GET.get('page', default=1)
+    keyword_ = request.GET.get('search')
+    params_dict = {'page': page, 'pageSize': 10}
+    news_response = everything_api(params_dict, keyword=keyword_)
+    context = {'articles': news_response['articles'],
+               'url': f'{request.path}?search={keyword_}&',
+               'previous': int(page)-1,
+               'current': page,
+               'next': int(page)+1}
     return render(request, 'home.html', context=context)
