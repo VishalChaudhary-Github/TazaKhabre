@@ -1,0 +1,11 @@
+.venv
+.idea
+home/migrations/__pycache__
+home/__pycache__
+home/templatetags/__pycache__
+TazaKhabre/__pycache__
+.env
+db.sqlite3
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir

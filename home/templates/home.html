@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+
+{% load static %}
+{% load custom_template_filters %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+{#     -----------------------------------#}
+    <title>{% block title %}Home{% endblock %}</title>
+{#        --------------------------------------#}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
+
+</head>
+
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+{% block nav %}
+<nav  class="navbar navbar-expand-lg navbar-light shadow" style="background-color: #f3f5f6; position: fixed; top:0; left:0; right: 0">
+  <div class="container-fluid">
+    <a class="navbar-brand" style="font-weight: bold; color: #3487ad"><img src="{% static 'title_icon.png' %}" alt="title icon" width="30" height="24"> TazaKhabre</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'home-page' %}">Trending</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Categories
+          </a>
+          <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=business">Business</a></li>
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=entertainment">Entertainment</a></li>
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=health">Health</a></li>
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=science">Science</a></li>
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=sports">Sports</a></li>
+              <li><a class="dropdown-item" href="{% url 'home-page' %}?category=technology">Technology</a></li>
+          </ul>
+        </li>
+      </ul>
+      <form method="GET" class="d-flex" role="search" action="{% url 'search-news' %}">
+          <input class="input is-success" type="search" placeholder="Search the News" aria-label="Search" style="margin-right: 10px" name="search" maxlength="500" required>
+        <button class="btn rounded-pill btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+{% endblock nav %}
+<button class="btn rounded-pill btn-outline-info" onclick="topFunction()" id="myBtn"
+        style="position: fixed; bottom: 20px; right: 30px; z-index: 99; padding: 15px; --button-hover-bg: #555"
+        title="Go to top">Top</button>
+
+<script>
+// Get the button
+let mybutton = document.getElementById("myBtn");
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+  if (document.body.scrollTop > 40 || document.documentElement.scrollTop > 40) {
+    mybutton.style.display = "block";
+  } else {
+    mybutton.style.display = "none";
+  }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+}
+</script>
+
+
+{% block data %}
+    <div class="container-sm" style="padding-top: 60px">
+    {% if page_start < page_end %}
+     <div class="row" style="padding-top: 20px">
+         <div class="records">Showing: <b>{{ page_start }}-{{ page_end }}</b> of <b>{{ total_results }}</b> result</div>
+     </div>
+    {% endif %}
+    <br>
+        <div class="row" style="display:flex; justify-content: space-evenly; min-height: 75vh">
+            <div class="col-sm-6">
+                {% for article in articles %}
+                    {% if article.urlToImage != None and article.description != None %}
+                    <div class="shadow" style="margin-bottom: 30px">
+                        <div class="card mb-3">
+                          <img src="{{ article.urlToImage }}" class="card-img-top" alt="Image didn't load Properly..">
+                          <div class="card-body">
+                              <h5 class="card-title" ><b><a href="{{ article.url }}" target="_blank">{{ article.title }}</a></b></h5>
+                            <p class="card-text">{{ article.description }}</p>
+                            <blockquote class="blockquote mb-0">
+                              <hr>
+                              <footer class="blockquote-footer">Published by <cite title="Source Title">{{ article.source.name }} (At - {{ article.publishedAt|change_timestamp }})</cite></footer>
+                            </blockquote>
+                          </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="col-sm-5">
+                <div class="shadow">
+                        <div class="card text-center">
+                            <div class="card-header bg-transparent text-danger" style="justify-content: center;"><b>Subscribe to our newsletter</b></div>
+                          <div class="card-body text-danger">
+                            <p class="card-text">Complete the subscription to daily receive or news alerts.</p>
+                              <form method="Post" action="{% url 'subscribe' %}">
+                                  {% csrf_token %}
+                                  <div class="mb-3">
+                                      <input class="input is-danger" type="email" placeholder="Enter Email" name="email" required>
+                                  </div>
+                                  <button type="submit" class="btn rounded-pill btn-outline-danger">Subscribe</button>
+                              </form>
+                          </div>
+                          <div class="card-footer bg-transparent text-danger" style="justify-content: center">
+                              {% if messages %}
+                                  {% for message in messages %}
+                                        {% if message.tags == 'success' %}
+                                            <p style="color: green">{{ message }}</p>
+                                        {% elif message.tags == 'error' %}
+                                            <p style="color: red">{{ message }}</p>
+                                        {% endif %}
+                                  {% endfor %}
+                              {% else %}
+                                    We'll never share your email with anyone else.
+                              {% endif %}
+                          </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <br>
+    <hr>
+{% endblock %}
+
+{% block pagination %}
+    <div class="container" style="display: flex; justify-content: center; margin-bottom: 25px">
+     <nav aria-label="Page navigation example">
+      <ul class="pagination">
+          {% if previous > 0 %}
+              <li class="page-item "><a class="page-link" href="{{ url }}page={{ previous }}">Back</a></li>
+          {% else %}
+              <li class="page-item disabled"><a class="page-link">Back</a></li>
+          {% endif %}
+                <li class="page-item"><a class="page-link">{{ current }}</a></li>
+                {% if next_page_disabled %}
+                    <li class="page-item disabled"><a class="page-link">Next</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="{{ url }}page={{ next }}">Next</a></li>
+                {% endif %}
+      </ul>
+     </nav>
+    </div>
+{% endblock %}
+
+<div class="container">
+      <footer class="py-3">
+        <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+          <li class="nav-item"><a href="{% url 'home-page' %}" class="nav-link px-2 text-body-secondary">Home</a></li>
+          <li class="nav-item"><a href="{% url 'about-us' %}" class="nav-link px-2 text-body-secondary">About</a></li>
+        </ul>
+        <p class="text-center text-body-secondary">© 2023 TazaKhabre, Pvt Project.</p>
+      </footer>
+</div>
+
+</body>
+</html>
